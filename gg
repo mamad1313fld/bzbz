@@ -1,0 +1,63 @@
+import logging
+import random
+import time
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+
+# تنظیمات ربات (باید توسط شما پر شود)
+TOKEN = 'YOUR_BOT_TOKEN'
+# اگر این پرچم را برابر True قرار دهید، بیشترین تعداد سکه‌ها را نمایش می‌دهد
+DEBUG_MODE = False
+
+# سطح برنامه ریزی
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# دیکشنری برای ذخیره تعداد سکه هر کاربر
+user_coins = {}
+
+# متد برای دسترسی به تعداد سکه هر کاربر
+def get_coins(user_id):
+    return user_coins.get(user_id, 0)
+
+# متد برای افزایش سکه هر کاربر
+def increase_coins(user_id, amount):
+    current_coins = get_coins(user_id)
+    user_coins[user_id] = current_coins + amount
+
+# متد برای مدیریت دکمه‌های شیشه‌ای
+def coin_button(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+    increase_coins(user_id, 1)
+    
+    # اگر تعداد سکه‌های جمع‌آوری شده توسط کاربر برابر با 200 باشد، تعداد سکه‌ها را سه برابر کنید
+    if get_coins(user_id) % 200 == 0:
+        context.bot.send_message(chat_id=user_id, text="تعداد سکه‌های شما برای 10 ثانیه سه برابر می‌شود!")
+        context.bot.send_message(chat_id=user_id, text=f"تعداد سکه‌های شما: {get_coins(user_id)}")
+        time.sleep(10)
+        user_coins[user_id] *= 3
+        context.bot.send_message(chat_id=user_id, text=f"تعداد سکه‌های شما بعد از سه برابر شدن: {get_coins(user_id)}")
+
+    update.callback_query.answer()
+    update.callback_query.edit_message_text(f"تعداد سکه‌های شما: {get_coins(user_id)}")
+
+# متد برای دسترسی به اطلاعات کاربر
+def start(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+    context.bot.send_message(chat_id=user_id, text="سلام! به ربات سکه گیر خوش آمدید.")
+    context.bot.send_message(chat_id=user_id, text=f"تعداد سکه‌های شما: {get_coins(user_id)}")
+
+# متد برای مدیریت فرمان‌ها
+def main() -> None:
+    updater = Updater(token=TOKEN)
+    dispatcher = updater.dispatcher
+
+    # اضافه کردن دستورهای مختلف به ربات
+    dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(CallbackQueryHandler(coin_button))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()

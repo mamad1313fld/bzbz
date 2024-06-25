@@ -5,7 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 
 # تنظیمات ربات (باید توسط شما پر شود)
-TOKEN = 'YOUR_BOT_TOKEN'
+TOKEN = '7172377055:AAGdFvAGlJ_PLlhZ-5HkqPZKllW-6YWAf3I'
 # اگر این پرچم را برابر True قرار دهید، بیشترین تعداد سکه‌ها را نمایش می‌دهد
 DEBUG_MODE = False
 
